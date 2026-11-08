@@ -1,0 +1,18 @@
+[
+  {"id":"C01","course":"大语言模型导论与技术基础","book":"大语言模型原理及应用","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/bookscenter/book_11260201.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/112602-01.jpg"},
+  {"id":"C02","course":"Transformer 与语言模型实现","book":"大语言模型基础（微课视频版）","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/bookscenter/book_11311301.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/113113-01.jpg"},
+  {"id":"C03","course":"大模型数据工程与预训练","book":"AI大模型系统开发技术","fit":"部分贴合","source":"https://www.tup.tsinghua.edu.cn/bookscenter/book_10790001.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/107900-01.jpg"},
+  {"id":"C04","course":"指令微调与模型对齐","book":"大语言模型基础教程","fit":"部分贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11174501.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/111745-01.jpg"},
+  {"id":"C05","course":"开源模型部署与推理服务","book":"垂直领域大模型构建技术及行业应用","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11399701.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/113997-01.jpg"},
+  {"id":"C06","course":"提示工程与 LLM 应用开发","book":"LangChain与大语言模型应用开发实践","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11313801.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/113138-01.jpg"},
+  {"id":"C07","course":"检索增强生成与教育知识库","book":"大模型从零开始跟我做——从Transformer到DeepSeek","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11125901.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/111259-01.jpg"},
+  {"id":"C08","course":"智能体与工具调用","book":"大模型时代——智能体的崛起与应用实践","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/bookscenter/book_10837801.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/108378-01.jpg"},
+  {"id":"C11","course":"多模态大模型与图文理解","book":"多模态机器学习","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_10103701.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/101037-01.jpg"},
+  {"id":"C12","course":"语音模型与课堂交互","book":"语音信息处理","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/bookscenter/book_10828401.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/108284-01.jpg"},
+  {"id":"C09","course":"大模型评测、安全与责任使用","book":"大语言模型与安全","fit":"贴合","source":"https://www.cmpedu.com/books/book/5609674.htm","cover":"https://s.cmpedu.com/images/upload/2025/7/8/1755853273089(lt800).jpg"},
+  {"id":"C16","course":"大模型辅助编程与代码评测","book":"Python应用开发——AI辅助编程","fit":"部分贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11258401.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/112584-01.jpg"},
+  {"id":"C13","course":"生成式 AI 教学设计与课程资源建设","book":"生成式人工智能应用教程","fit":"贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11371801.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/113718-01.jpg"},
+  {"id":"C14","course":"教育智能答疑与个性化辅导","book":"智慧学习理论与方法","fit":"部分贴合","source":"https://www.ecsponline.com/goods.php?id=213005","cover":"https://www.ecsponline.com/book_2019/2021/lt/9787030695925-001001-fcv_lt.jpg"},
+  {"id":"C15","course":"学习分析与智能教学评价","book":"教育大数据与机器学习","fit":"部分贴合","source":"https://www.ecsponline.com/goods.php?id=236384","cover":"https://www.ecsponline.com/book_2019/2026/lt/9787030841506-001001-fcv_lt.jpg"},
+  {"id":"C10","course":"教育场景大模型综合实践","book":"人工智能教育技术通识教程","fit":"部分贴合","source":"https://www.tup.tsinghua.edu.cn/booksCenter/book_11342201.html","cover":"https://www.tup.tsinghua.edu.cn/upload/bigbookimg/113422-01.jpg"}
+]
