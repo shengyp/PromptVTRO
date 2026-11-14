@@ -37,6 +37,7 @@
 .lc-hero-actions{display:flex;gap:10px;margin-top:23px;flex-wrap:wrap}
 .lc-hero-actions button,.lc-hero-actions a{display:inline-flex;align-items:center;gap:7px;background:#fff;color:#177451;border:0;border-radius:7px;padding:11px 16px;font-weight:800;font-size:12px;text-decoration:none}
 .lc-hero-actions a{background:transparent;color:#fff;border:1px solid #a4d2b3}
+.lc-hero-actions button.lc-hero-outline{background:transparent;color:#fff;border:1px solid #a4d2b3}
 .lc-hero-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lc-hero-facts div{border:1px solid #a6d4b536;border-radius:9px;padding:14px;background:#ffffff12;color:#e5f2e9}
 .lc-hero-facts strong{font-size:27px;color:#fff;display:block;line-height:1}
@@ -92,6 +93,19 @@
 .lc-aside dt{color:#8ca090;white-space:nowrap}
 .lc-aside dd{color:#385d44;text-align:right;margin:0;font-weight:700}
 .lc-netdisk-button{height:36px;border-radius:6px;background:#147d5c;color:#fff;display:flex;align-items:center;justify-content:center;gap:5px;font-size:11px;font-weight:800;margin-top:13px;text-decoration:none}
+.lc-netdisk-button{width:100%;border:0;cursor:pointer}
+.lc-chapter-head{flex-wrap:wrap;margin-bottom:14px}
+.lc-chapter-switch{display:flex;align-items:center;gap:13px}
+.lc-chapter-switch button{border:0;background:none;padding:4px 0 10px;color:#779181;font-size:18px;font-weight:700;cursor:pointer}
+.lc-chapter-switch button.active{color:#16442f;border-bottom:3px solid #16855e}
+.lc-chapter-switch>span{width:1px;height:20px;background:#d8e7dc}
+.lc-unit-lessons button.lc-practice-row{background:#f1f8f3;color:#176c4e;font-weight:700;min-height:47px}
+.lc-practice-row strong{flex:1}
+.lc-practice-row span{color:#829987;font-size:11px}
+.lc-exam-entry{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;background:#e9f5ee;border:1px solid #b8dec6;border-radius:8px;padding:16px 18px;margin-top:14px;color:#176b4e;text-align:left;cursor:pointer}
+.lc-exam-entry strong,.lc-exam-entry small{display:block}
+.lc-exam-entry strong{font-size:15px}
+.lc-exam-entry small{font-size:11px;color:#76917d;margin-top:5px}
 .lc-resource{display:flex;gap:9px;align-items:flex-start;padding:11px 0;border-top:1px solid #edf2ee;color:#16845d}
 .lc-resource strong{font-size:11px;display:block;color:#315943}
 .lc-resource small{color:#8aa18e;font-size:10px;display:block;margin-top:4px}

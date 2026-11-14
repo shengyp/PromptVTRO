@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.vite/
+.env
+.env.*
+!.env.example
+*.log
+public/videos/*.mp4
+!public/videos/langchain-overview-demo.mp4

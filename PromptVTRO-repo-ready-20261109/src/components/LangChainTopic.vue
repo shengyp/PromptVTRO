@@ -1,56 +1,72 @@
 <script setup>
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
-import { ArrowLeft, ArrowRight, BookOpen, Check, ChevronDown, ChevronLeft, ChevronRight, Clipboard, ExternalLink, FileText, FolderOpen, Play, Search, X } from 'lucide-vue-next'
-import { langchainLessons, langchainShareUrl, langchainUnits } from '../data/langchain-topic.js'
+import { ArrowLeft, ArrowRight, Bot, BookOpen, ChevronDown, FileVideo, FolderOpen, MessageCircle, Play, Search } from 'lucide-vue-next'
+import { langchainLessons, langchainUnits } from '../data/langchain-topic.js'
+import { courseTitle } from '../data/langchain-course.js'
 
-const props = defineProps({ initialLessonId: String, backLabel: { type: String, default: '返回门户' } })
-defineEmits(['back'])
-
-const selected = ref(langchainLessons.find(lesson => lesson.id === props.initialLessonId) || langchainLessons[0])
-const expanded = ref(langchainUnits[0].id)
+const props = defineProps({ initialLessonId: String, backLabel: { type: String, default: '返回课程' } })
+const emit = defineEmits(['back', 'practice', 'exam'])
+const selected = ref(langchainLessons.find(item => item.id === props.initialLessonId) || langchainLessons[0])
+const expanded = ref(langchainUnits.find(unit => unit.lessons.some(item => item.id === selected.value.id))?.id || langchainUnits[0].id)
 const query = ref('')
 const tab = ref('guide')
+const assistantOpen = ref(false)
+const sourcesOpen = ref(false)
 const folderInput = ref(null)
 const localFiles = ref(new Map())
-const localFolderName = ref('')
-const videoUrl = ref('')
-const videoError = ref('')
-const copied = ref(false)
+const folderName = ref('')
+const localUrl = ref('')
+const playerError = ref('')
+const note = ref('')
+const comments = ref([])
+const commentDraft = ref('')
+const demoUrl = '/videos/langchain-overview-demo.mp4'
 
-const selectedIndex = computed(() => langchainLessons.findIndex(lesson => lesson.id === selected.value.id))
-const matchedCount = computed(() => langchainLessons.filter(findLocalFile).length)
+const currentIndex = computed(() => langchainLessons.findIndex(item => item.id === selected.value.id))
+const currentUnit = computed(() => langchainUnits.find(unit => unit.lessons.some(item => item.id === selected.value.id)))
+const matchedCount = computed(() => langchainLessons.filter(item => localFiles.value.has(item.day + '/' + item.fileName)).length)
+const playerUrl = computed(() => localUrl.value || (selected.value.id === langchainLessons[0].id ? demoUrl : ''))
+const isDemo = computed(() => !localUrl.value && selected.value.id === langchainLessons[0].id)
 const visibleUnits = computed(() => {
   const term = query.value.trim().toLowerCase()
   if (!term) return langchainUnits
-  return langchainUnits.map(unit => ({
-    ...unit,
-    lessons: unit.lessons.filter(lesson => (lesson.title + lesson.fileName).toLowerCase().includes(term)),
-  })).filter(unit => unit.lessons.length)
+  return langchainUnits.map(unit => ({ ...unit, lessons: unit.lessons.filter(item => (item.title + item.fileName).toLowerCase().includes(term)) })).filter(unit => unit.lessons.length)
 })
 
-function findLocalFile(lesson) {
-  return localFiles.value.get(lesson.day + '/' + lesson.fileName) || null
+function storageKey(kind) { return 'lc-course-' + kind + '-' + selected.value.id }
+function loadLocal() {
+  try {
+    note.value = localStorage.getItem(storageKey('note')) || ''
+    const value = JSON.parse(localStorage.getItem(storageKey('discussion')) || '[]')
+    comments.value = Array.isArray(value) ? value : []
+  } catch { note.value = ''; comments.value = [] }
+  commentDraft.value = ''
 }
-
+function saveNote() {
+  try { localStorage.setItem(storageKey('note'), note.value) } catch { /* Private browsing may block storage. */ }
+}
+function addComment() {
+  const value = commentDraft.value.trim()
+  if (!value) return
+  comments.value = [...comments.value, { text: value, time: new Date().toLocaleString('zh-CN') }]
+  try { localStorage.setItem(storageKey('discussion'), JSON.stringify(comments.value)) } catch { /* Display this-session content. */ }
+  commentDraft.value = ''
+}
 function refreshVideo() {
-  if (videoUrl.value) URL.revokeObjectURL(videoUrl.value)
-  videoUrl.value = ''
-  videoError.value = ''
-  const file = findLocalFile(selected.value)
-  if (file) videoUrl.value = URL.createObjectURL(file)
+  if (localUrl.value) URL.revokeObjectURL(localUrl.value)
+  localUrl.value = ''
+  playerError.value = ''
+  const file = localFiles.value.get(selected.value.day + '/' + selected.value.fileName)
+  if (file) localUrl.value = URL.createObjectURL(file)
 }
-
 function chooseLesson(lesson) {
   selected.value = lesson
-  const unit = langchainUnits.find(item => item.lessons.some(entry => entry.id === lesson.id))
-  if (unit) expanded.value = unit.id
+  expanded.value = langchainUnits.find(unit => unit.lessons.some(item => item.id === lesson.id))?.id || expanded.value
+  tab.value = 'guide'
   refreshVideo()
+  loadLocal()
+  window.scrollTo(0, 0)
 }
-watch(() => props.initialLessonId, id => {
-  const lesson = langchainLessons.find(item => item.id === id)
-  if (lesson) chooseLesson(lesson)
-})
-
 function chooseFolder(event) {
   const files = Array.from(event.target.files || [])
   const mapped = new Map()
@@ -60,72 +76,68 @@ function chooseFolder(event) {
     const day = parts.find(part => /^day0[123]$/i.test(part))
     if (day) mapped.set(day.toLowerCase() + '/' + file.name, file)
     else {
-      const matching = langchainLessons.filter(lesson => lesson.fileName === file.name)
-      if (matching.length === 1) mapped.set(matching[0].day + '/' + file.name, file)
+      const matches = langchainLessons.filter(item => item.fileName === file.name)
+      if (matches.length === 1) mapped.set(matches[0].day + '/' + file.name, file)
     }
   }
   localFiles.value = mapped
-  localFolderName.value = files[0]?.webkitRelativePath?.split('/')[0] || ''
+  folderName.value = files[0]?.webkitRelativePath?.split('/')[0] || ''
   refreshVideo()
-  // Let the user select the same folder again after updating its contents.
   event.target.value = ''
 }
-
-function moveLesson(offset) {
-  const next = langchainLessons[selectedIndex.value + offset]
+function move(offset) {
+  const next = langchainLessons[currentIndex.value + offset]
   if (next) chooseLesson(next)
 }
-
-async function copyPath() {
-  try {
-    await navigator.clipboard.writeText(selected.value.netdiskPath)
-    copied.value = true
-    setTimeout(() => { copied.value = false }, 2000)
-  } catch { copied.value = false }
-}
-
-onBeforeUnmount(() => { if (videoUrl.value) URL.revokeObjectURL(videoUrl.value) })
+watch(() => props.initialLessonId, id => {
+  const lesson = langchainLessons.find(item => item.id === id)
+  if (lesson) chooseLesson(lesson)
+})
+loadLocal()
+onBeforeUnmount(() => { if (localUrl.value) URL.revokeObjectURL(localUrl.value) })
 </script>
 
 <template>
-  <div class="topic-page">
-    <header class="topic-header">
-      <div class="topic-brand"><img src="/swu-logo.svg" alt="西南大学校徽" /><span><strong>LLM课程学习</strong><small>大语言模型课程一体化平台</small></span></div>
-      <nav aria-label="专题导航"><a href="#topic-top" class="current">专题学习</a><button type="button" @click="tab='materials'">学习资料</button><button type="button" @click="tab='exercise'">章节练习</button><button type="button" class="topic-back" @click="$emit('back')"><ArrowLeft :size="16" />{{backLabel}}</button></nav>
-    </header>
-
-    <div id="topic-top" class="topic-content">
-      <aside class="topic-sidebar" aria-label="专题视频目录">
-        <div class="topic-side-head"><span class="topic-kicker">LEARNING PATH</span><h2>专题目录</h2><p>尚硅谷大模型技术之 LangChain<br />按分享中的视频文件整理</p></div>
-        <div class="topic-side-count"><span>已核对视频</span><strong>{{langchainLessons.length}} 节</strong></div>
-        <label class="topic-search"><Search :size="15" /><input v-model="query" aria-label="搜索专题视频" placeholder="搜索本专题视频" /><button v-if="query" type="button" aria-label="清除搜索" @click="query=''"><X :size="14" /></button></label>
-        <div v-if="!visibleUnits.length" class="topic-no-results">没有找到匹配的视频</div>
-        <section v-for="(unit,index) in visibleUnits" :key="unit.id" class="topic-unit">
-          <button type="button" class="topic-unit-head" :aria-expanded="expanded===unit.id || !!query" @click="expanded=expanded===unit.id?'':unit.id"><span>{{String(langchainUnits.findIndex(item=>item.id===unit.id)+1).padStart(2,'0')}}</span><strong>{{unit.title}}</strong><small>{{unit.lessons.length}} 节</small><ChevronDown :size="15" /></button>
-          <div v-if="expanded===unit.id || query" class="topic-lesson-list"><button v-for="lesson in unit.lessons" :key="lesson.id" type="button" :class="{active:selected.id===lesson.id}" @click="chooseLesson(lesson)"><Play :size="13" /><span>{{lesson.title}}</span><small v-if="findLocalFile(lesson)" title="已匹配本地视频"><Check :size="12" /></small></button></div>
-        </section>
-      </aside>
-
-      <main class="topic-main">
-        <div class="topic-breadcrumb">门户首页　/　专题学习　/　<strong>LangChain 大模型应用开发</strong></div>
-        <section class="topic-hero"><div><span class="topic-kicker">FEATURED TOPIC · 专题学习</span><h1>LangChain 大模型应用开发</h1><p>基于你提供的尚硅谷视频资源整理 · 三天目录中已核对 {{langchainLessons.length}} 段视频</p></div><span class="topic-status">网盘资源已收集</span></section>
-        <p class="topic-notice">视频目前保存在百度网盘。点击“前往网盘观看”可在网盘页面查看；如已下载整套视频，也可在此选择本地文件夹直接播放。</p>
-        <div class="topic-workspace">
-          <div>
-            <section class="topic-player-card">
-              <div class="topic-player">
-                <video v-if="videoUrl" :key="videoUrl" :src="videoUrl" controls preload="metadata" playsinline @error="videoError='本地视频加载失败，请检查文件是否完整及浏览器是否支持该编码。'">你的浏览器不支持视频播放。</video>
-                <div v-else class="topic-player-placeholder"><div class="topic-play-icon"><Play :size="30" fill="currentColor" /></div><small>{{selected.day.toUpperCase()}} · 第 {{String(selectedIndex+1).padStart(2,'0')}} 节</small><h2>{{selected.title}}</h2><p>视频在百度网盘中；选择下载后的文件夹可在此播放</p><a :href="langchainShareUrl" target="_blank" rel="noopener noreferrer"><ExternalLink :size="17" />前往网盘观看</a></div>
+  <div class="lc-video-page">
+    <header class="lc-video-header"><div class="lc-video-brand"><span>LLM</span><div><strong>LLM课程学习</strong><small>大语言模型课程一体化平台</small></div></div><button type="button" @click="emit('back')"><ArrowLeft :size="16" />{{backLabel}}</button></header>
+    <div class="lc-video-shell">
+      <p class="lc-video-crumb">{{courseTitle}}　/　{{currentUnit?.title}}　/　{{selected.title}}</p>
+      <div class="lc-video-topline"><div><span class="lc-video-kicker">课程视频 · {{selected.day.toUpperCase()}}</span><h1>{{selected.title}}</h1></div><button type="button" class="lc-video-assistant-button" :aria-pressed="assistantOpen" @click="assistantOpen=!assistantOpen"><Bot :size="18" />{{assistantOpen?'关闭智能助手':'智能助手'}} <small>待接入</small></button></div>
+      <div class="lc-video-layout">
+        <aside v-if="!assistantOpen" class="lc-video-sidebar" aria-label="课程章节">
+          <div class="lc-video-side-title"><h2>课程章节</h2><span>{{langchainUnits.length}} 单元 · {{langchainLessons.length}} 节</span></div>
+          <label class="lc-video-search"><Search :size="15" /><input v-model="query" type="search" placeholder="搜索章节与视频" aria-label="搜索章节与视频" /></label>
+          <div class="lc-video-unit-list">
+            <section v-for="(unit,index) in visibleUnits" :key="unit.id" class="lc-video-unit">
+              <button type="button" class="lc-video-unit-toggle" :aria-expanded="expanded===unit.id || !!query" @click="expanded=expanded===unit.id?'':unit.id"><b>{{String(index+1).padStart(2,'0')}}　{{unit.title}}</b><ChevronDown :size="15" :class="{up:expanded===unit.id || !!query}" /></button>
+              <div v-if="expanded===unit.id || query" class="lc-video-lessons">
+                <button v-for="(lesson,lessonIndex) in unit.lessons" :key="lesson.id" type="button" :class="{active:selected.id===lesson.id}" @click="chooseLesson(lesson)"><Play :size="12" /><span>{{String(lessonIndex+1).padStart(2,'0')}}　{{lesson.title}}</span><small v-if="localFiles.has(lesson.day+'/'+lesson.fileName)">本地</small><small v-else-if="lesson.id===langchainLessons[0].id">演示</small></button>
+                <button type="button" class="lc-video-practice" @click="emit('practice',unit.id)">本单元章节练习 <ArrowRight :size="13" /></button>
               </div>
-              <p v-if="videoError" class="topic-video-error" role="alert">{{videoError}}</p>
-              <div class="topic-player-info"><div><span class="topic-lesson-index">第 {{selectedIndex+1}} / {{langchainLessons.length}} 节</span><h2>{{selected.title}}</h2><p>原文件：{{selected.fileName}}</p></div><div class="topic-move"><button type="button" :disabled="selectedIndex===0" @click="moveLesson(-1)"><ChevronLeft :size="15" />上一节</button><button type="button" :disabled="selectedIndex===langchainLessons.length-1" @click="moveLesson(1)">下一节<ChevronRight :size="15" /></button></div></div>
             </section>
-            <section class="topic-lower"><div class="topic-tabs"><button type="button" :class="{active:tab==='guide'}" @click="tab='guide'">本节导学</button><button type="button" :class="{active:tab==='materials'}" @click="tab='materials'">课程资料</button><button type="button" :class="{active:tab==='exercise'}" @click="tab='exercise'">章节练习</button></div><div v-if="tab==='guide'"><h3>本节学习提示</h3><p>当前选中“{{selected.title}}”。章节标题依据视频文件名整理；具体知识点和讲义将在核对视频内容后补充。</p></div><div v-else-if="tab==='materials'"><h3>分享中的配套资料</h3><p>网盘“1.笔记”中有《尚硅谷大模型技术之LangChainV1.1.0》；“2.资料”中有环境依赖、嵌入模型及 Milvus 相关文件。<a :href="langchainShareUrl" target="_blank" rel="noopener noreferrer">打开资料所在的网盘分享 <ExternalLink :size="14" /></a></p></div><div v-else><h3>练习待整理</h3><p>分享目录中尚未确认成套习题。后续可依据视频和笔记编写章节题，发布前先核对题目与答案。</p></div></section>
           </div>
-          <aside class="topic-resources"><section><span class="topic-chip">观看方式</span><h3>在百度网盘观看</h3><p>打开分享后，按下方路径找到当前视频。网盘可能要求登录。</p><div class="topic-path">{{selected.netdiskPath}}</div><div class="topic-resource-actions"><a :href="langchainShareUrl" target="_blank" rel="noopener noreferrer"><ExternalLink :size="14" />打开网盘</a><button type="button" @click="copyPath"><Check v-if="copied" :size="14" /><Clipboard v-else :size="14" />{{copied?'已复制':'复制路径'}}</button></div></section><section><span class="topic-chip">本机播放</span><h3>选择已下载的视频</h3><p>请选择包含 day01、day02、day03 的“4.视频”文件夹。文件只在当前浏览器中读取，不会上传到本站。</p><input ref="folderInput" class="topic-file-input" type="file" accept=".mp4,video/mp4" webkitdirectory directory multiple @change="chooseFolder" /><button type="button" class="topic-choose-folder" @click="folderInput?.click()"><FolderOpen :size="16" />选择视频文件夹</button><small v-if="localFolderName">{{localFolderName}}：已匹配 {{matchedCount}} / {{langchainLessons.length}} 段视频</small><small v-else>尚未选择本地文件夹</small></section><section><span class="topic-chip">配套资料</span><h3>课程笔记与环境</h3><p><FileText :size="15" />笔记 V1.1.0 · DOCX</p><p><BookOpen :size="15" />依赖、模型与 Milvus 资料</p><a :href="langchainShareUrl" target="_blank" rel="noopener noreferrer">到网盘查看资料 <ArrowRight :size="14" /></a></section></aside>
-        </div>
-      </main>
+          <button type="button" class="lc-video-exam-link" @click="emit('exam')">期末考试 <ArrowRight :size="14" /></button>
+        </aside>
+        <main class="lc-video-main">
+          <section class="lc-player-card">
+            <div class="lc-player-head"><span><FileVideo :size="16" />{{selected.title}}</span><small>{{isDemo?'站内自制演示':localUrl?'浏览器本地文件':'原视频待接入'}}</small></div>
+            <video v-if="playerUrl" :key="playerUrl" controls playsinline preload="auto" :src="playerUrl" @error="playerError='视频无法播放，请检查格式或重新选择文件。'">您的浏览器不支持视频播放。</video>
+            <div v-else class="lc-player-empty"><FileVideo :size="43" /><strong>这节原视频尚未接入本站</strong><p>下载课程视频后，选择包含 day01、day02、day03 的文件夹，即可在本站播放匹配的视频。</p><button type="button" @click="folderInput?.click()"><FolderOpen :size="15" />选择本地视频文件夹</button></div>
+            <p v-if="playerError" class="lc-player-error" role="alert">{{playerError}}</p>
+            <div class="lc-player-foot"><p>{{isDemo?'当前播放的是自制界面演示，不是尚硅谷原课程视频。':localUrl?'视频只在本次浏览器会话中读取，不会上传。':'课程文件名已建目录，视频文件仍需接入。'}}</p><div><button type="button" :disabled="currentIndex===0" @click="move(-1)">上一节</button><button type="button" :disabled="currentIndex===langchainLessons.length-1" @click="move(1)">下一节 →</button></div></div>
+          </section>
+          <div class="lc-video-tabs" role="tablist" aria-label="本节内容"><button v-for="item in [{id:'guide',name:'本节导学'},{id:'materials',name:'资料来源'},{id:'notes',name:'学习笔记'},{id:'discussion',name:'本节讨论'}]" :key="item.id" type="button" role="tab" :aria-selected="tab===item.id" :class="{active:tab===item.id}" @click="tab=item.id">{{item.name}}</button></div>
+          <section class="lc-video-panel">
+            <template v-if="tab==='guide'"><h2>本节导学</h2><p>本节主题：{{selected.title}}。建议先观看视频，再对照课程思维导图梳理相关概念，完成所属单元的章节练习。</p><p class="lc-video-muted">本节导学依据视频文件名编排，讲解内容仍待教师核对。</p></template>
+            <template v-else-if="tab==='materials'"><h2>资料来源</h2><p>课程目录来自你提供的“尚硅谷大模型技术之 LangChain”网盘分享。该分享链接不是可直接嵌入的 MP4 地址。</p><button type="button" class="lc-video-source-toggle" :aria-expanded="sourcesOpen" @click="sourcesOpen=!sourcesOpen">查看文件匹配信息 <ChevronDown :size="15" :class="{up:sourcesOpen}" /></button><div v-if="sourcesOpen" class="lc-video-source-details"><p>预期文件：{{selected.day}} / {{selected.fileName}}</p><p>本地匹配：{{matchedCount}} / {{langchainLessons.length}} 节{{folderName?' · 已选文件夹：'+folderName:''}}</p><button type="button" @click="folderInput?.click()">重新选择文件夹</button></div></template>
+            <template v-else-if="tab==='notes'"><h2>学习笔记</h2><p class="lc-video-muted">笔记保存在当前浏览器。清理浏览器数据后可能丢失。</p><textarea v-model="note" rows="6" placeholder="记录本节概念、问题或代码要点……"></textarea><button type="button" class="lc-video-primary" @click="saveNote">保存本节笔记</button></template>
+            <template v-else><h2>本节讨论</h2><p class="lc-video-muted">当前是浏览器本地讨论演示，其他用户看不到，正式讨论需接入账号与后端。</p><div v-if="comments.length" class="lc-video-comments"><article v-for="(comment,index) in comments" :key="index"><b>本机学习者</b><small>{{comment.time}}</small><p>{{comment.text}}</p></article></div><p v-else class="lc-video-muted">暂无本机讨论记录。</p><textarea v-model="commentDraft" rows="3" maxlength="1000" placeholder="写下本节的问题或想法……"></textarea><button type="button" class="lc-video-primary" :disabled="!commentDraft.trim()" @click="addComment">发布到本机演示区</button></template>
+          </section>
+        </main>
+        <aside v-if="assistantOpen" class="lc-assistant" aria-label="智能助手"><div class="lc-assistant-head"><Bot :size="20" /><strong>课程智能助手</strong><span>待接入</span></div><p>这里将结合当前视频、课程讲义和章节练习回答问题。</p><div class="lc-assistant-placeholder"><BookOpen :size="22" /><strong>当前未连接模型</strong><span>接入课程知识库和后端后，才可进行真实问答。</span></div><div class="lc-assistant-suggestions"><strong>可准备的问题</strong><span>这节课的关键概念是什么？</span><span>有哪些常见错误？</span><span>给我一个入门练习。</span></div><div class="lc-assistant-input"><input type="text" placeholder="模型接入后可提问" disabled /><button type="button" disabled>发送</button></div></aside>
+      </div>
     </div>
+    <input ref="folderInput" class="lc-video-hidden" type="file" accept="video/mp4,.mp4" webkitdirectory directory multiple @change="chooseFolder" />
   </div>
 </template>
 

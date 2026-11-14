@@ -16,14 +16,17 @@ const slideIndex = ref(0)
 const loginAudience = ref('student')
 const selectedCourse = ref(null)
 const courseDialog = ref(null)
-const showTopic = ref(window.location.hash === '#langchain-topic')
-function syncTopicFromUrl() { showTopic.value = window.location.hash === '#langchain-topic' }
+const langchainReferenceBook = portalBooks.find(course => course.id === 'C06')
+const langchainCoverReady = ref(false)
+const langchainCoverFailed = ref(false)
+const showTopic = ref(['#langchain-course','#langchain-topic'].includes(window.location.hash))
+function syncTopicFromUrl() { showTopic.value = ['#langchain-course','#langchain-topic'].includes(window.location.hash) }
 onMounted(() => { window.addEventListener('hashchange', syncTopicFromUrl); window.addEventListener('popstate', syncTopicFromUrl) })
 onUnmounted(() => { window.removeEventListener('hashchange', syncTopicFromUrl); window.removeEventListener('popstate', syncTopicFromUrl) })
 function openTopic(event) {
   event?.preventDefault()
   showTopic.value = true
-  window.location.hash = 'langchain-topic'
+  window.location.hash = 'langchain-course'
   window.scrollTo(0, 0)
 }
 async function closeTopic(target = 'open-courses') {
@@ -39,12 +42,12 @@ async function openCourse(course) {
 }
 function followNavigation(item, event) {
   menuOpen.value = false
-  if (item.href === '#langchain-topic') { openTopic(event); return }
+  if (item.href === '#langchain-course') { openTopic(event); return }
   if (item.href === '#portal-login') loginAudience.value = 'teacher'
 }
 
 const navigation = [
-  { label: '专题学习', href: '#langchain-topic', icon: BookOpen },
+  { label: '课程学习', href: '#langchain-course', icon: BookOpen },
   { label: '开放课程', href: '#open-courses', icon: BookOpen },
   { label: '实训', href: '#training', icon: FlaskConical },
   { label: '比赛', href: '#competition', icon: Trophy },
@@ -201,13 +204,14 @@ const thesisTopics = ['课程知识库问答', '学习助教应用', '模型评�
       </section>
 
       <section id="open-courses" class="portal-section portal-course-section">
-        <div class="portal-section-heading"><div><span class="portal-section-kicker">OPEN COURSES</span><h2>开放课程</h2><p>16 门本站课程规划 · 教材封面来自真实出版物，正式教材与课程资料待确定。</p></div><span class="portal-status">规划中</span></div>
-        <article class="portal-langchain-feature">
-          <div class="portal-langchain-illustration" aria-hidden="true"><BookOpen :size="68" /><span>LANGCHAIN</span></div>
-          <div class="portal-langchain-copy"><span class="portal-section-kicker">FEATURED TOPIC · 专题学习</span><h3>LangChain 大模型应用开发</h3><p>根据你提供的尚硅谷资源整理，已核对三天目录中的 48 段视频。专题与下方 16 门课程规划分别展示。</p><div><span>视频资源已收集</span><span>网盘观看 · 本地播放</span></div></div>
-          <button type="button" @click="openTopic">进入专题 <ArrowRight :size="17" /></button>
-        </article>
+        <div class="portal-section-heading"><div><span class="portal-section-kicker">OPEN COURSES</span><h2>开放课程</h2><p>1 门已建课程 · 16 门课程规划。规划课程的教材封面来自真实出版物，正式教材与资料待确定。</p></div><span class="portal-status">持续建设中</span></div>
         <div class="portal-course-grid">
+          <article class="portal-book-card portal-langchain-card">
+            <button type="button" class="portal-book-button" aria-label="进入 LangChain 大模型应用开发课程" @click="openTopic">
+              <span class="portal-book-cover portal-langchain-cover"><BookOpen v-if="!langchainCoverReady" :size="76" /><span v-if="!langchainCoverReady">LANGCHAIN</span><img v-if="!langchainCoverFailed" :src="langchainReferenceBook.cover" alt="《LangChain与大语言模型应用开发实践》参考教材封面" referrerpolicy="no-referrer" @load="langchainCoverReady=true" @error="langchainCoverFailed=true" /></span>
+              <span class="portal-book-info"><small>C00 · 课程学习</small><strong>LangChain 大模型应用开发</strong><span>参考教材：《{{langchainReferenceBook.book}}》</span><em>进入课程 <ArrowRight :size="14" /></em></span>
+            </button>
+          </article>
           <article v-for="course in portalBooks" :key="course.id" class="portal-book-card">
             <button type="button" class="portal-book-button" :aria-label="`查看${course.course}的规划信息`" @click="openCourse(course)">
               <span class="portal-book-cover"><img :src="course.cover" :alt="`《${course.book}》教材封面`" referrerpolicy="no-referrer" /></span>
@@ -289,16 +293,12 @@ const thesisTopics = ['课程知识库问答', '学习助教应用', '模型评�
 @media(max-width:1050px){.portal-menu-toggle{display:grid;place-items:center;width:40px;height:40px}.portal-navigation{display:none;position:absolute;top:100%;left:0;right:0;padding:12px 22px 18px;background:var(--portal-green);box-shadow:0 12px 19px #102f2580;grid-template-columns:repeat(2,minmax(0,1fr))}.portal-navigation.open{display:grid}.portal-navigation a{padding:11px;font-size:13px}.portal-navigation a:last-child{margin-left:0}.portal-first{grid-template-columns:1fr minmax(280px,.76fr)}.portal-overview{grid-column:1/-1;grid-row:2;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto}.portal-overview-card{min-height:90px}.portal-hero{min-height:430px}.portal-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){.portal-header{min-height:72px;padding:12px 16px}.portal-brand img{width:40px;height:40px}.portal-brand span{font-size:14px;white-space:normal}.portal-brand small{font-size:9px}.portal-main{padding:0 16px 46px}.portal-notice{align-items:flex-start;padding:12px 0}.portal-first{display:flex;flex-direction:column}.portal-hero{min-height:350px;order:0}.portal-hero-copy{width:75%;padding:34px 0 55px 24px}.portal-hero h1{font-size:29px}.portal-hero p{font-size:12px}.portal-hero-art{right:-30px;bottom:20px;width:42%;height:210px;opacity:.55}.portal-art-book{width:110px;height:110px}.portal-art-book svg{width:70px}.portal-art-chip{width:36px;height:36px;font-size:10px}.portal-carousel-controls{left:24px}.portal-overview{order:1;display:grid;grid-template-columns:1fr 1fr;gap:9px}.portal-overview-card{padding:12px;min-height:76px}.portal-overview-card:last-child{grid-column:1/-1}.portal-overview-card b{font-size:20px}.portal-overview-icon{width:36px;height:36px;flex-basis:36px}.portal-login{order:2;padding:22px}.portal-section{padding-top:53px}.portal-section-heading{align-items:flex-start;flex-direction:column;gap:10px}.portal-section-heading h2{font-size:23px}.portal-service-grid,.portal-course-layout,.portal-lab-grid,.portal-double-section{grid-template-columns:1fr}.portal-service-card{min-height:160px}.portal-course-feature{min-height:250px}.portal-practice-section{margin-top:48px;padding:24px}.portal-practice-steps{grid-template-columns:1fr 1fr}.portal-footer{grid-template-columns:1fr;gap:24px;padding:32px 20px}}
 @media(max-width:430px){.portal-overview{grid-template-columns:1fr}.portal-overview-card:last-child{grid-column:auto}.portal-hero-copy{width:90%}.portal-hero-art{opacity:.25}.portal-course-route ol,.portal-practice-steps{grid-template-columns:1fr}.portal-navigation{grid-template-columns:1fr}}
+.portal-book-cover.portal-langchain-cover{flex-direction:column;gap:15px;background:radial-gradient(circle at 40% 20%,#418e6a,#1d6048 60%,#103e31);color:#d7f1df}
+.portal-langchain-cover span{font-size:12px;font-weight:800;letter-spacing:3px}
+.portal-langchain-card .portal-book-button:hover .portal-langchain-cover svg{transform:translateY(-4px)}
+.portal-langchain-cover svg{transition:transform .2s}
 </style>
 
-<style scoped>
-.portal-langchain-feature{display:grid;grid-template-columns:185px minmax(0,1fr) auto;align-items:center;gap:25px;margin:3px 0 26px;padding:17px 23px 17px 17px;background:#fff;border:1px solid #d5e9da;border-radius:16px;box-shadow:0 9px 25px #2052370c}
-.portal-langchain-illustration{height:132px;border-radius:11px;background:radial-gradient(circle at 45% 35%,#3f8967,#164d39 62%,#103c31);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#d7f0de;gap:9px;overflow:hidden}.portal-langchain-illustration span{font-size:10px;font-weight:800;letter-spacing:2.8px;color:#a2d5b1}
-.portal-langchain-copy h3{font-size:21px;line-height:1.4;margin:7px 0}.portal-langchain-copy p{font-size:12px;line-height:1.75;color:#687f6e;margin:0 0 12px}.portal-langchain-copy>div{display:flex;flex-wrap:wrap;gap:7px}.portal-langchain-copy>div span{font-size:10px;border-radius:5px;background:#eaf5ed;color:#307b58;padding:5px 8px}
-.portal-langchain-feature>button{display:inline-flex;align-items:center;gap:8px;white-space:nowrap;background:#147d65;color:#fff;border:0;border-radius:9px;padding:12px 15px;font-size:12px;font-weight:700}.portal-langchain-feature>button:hover{background:#0f6e57}
-@media(max-width:820px){.portal-langchain-feature{grid-template-columns:105px minmax(0,1fr);gap:13px;padding:12px}.portal-langchain-illustration{height:125px}.portal-langchain-illustration svg{width:45px}.portal-langchain-illustration span{font-size:8px;letter-spacing:1px}.portal-langchain-feature>button{grid-column:2;justify-self:start;padding:9px 11px}}
-@media(max-width:480px){.portal-langchain-feature{grid-template-columns:1fr}.portal-langchain-illustration{height:95px}.portal-langchain-feature>button{grid-column:1}.portal-langchain-copy h3{font-size:18px}}
-</style>
 
 <style scoped>
 /* Public portal proposal: keep the original green palette and the three-column entry. */
