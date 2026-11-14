@@ -16,30 +16,30 @@
 
 ## 本地启动
 
-需要 Node.js 24 和 pnpm。在本目录（包含 \`package.json\`）打开 PowerShell：
+需要 Node.js 24 和 pnpm。在本目录（包含 `package.json`）打开 PowerShell：
 
-\`\`\`powershell
+```powershell
 pnpm install --frozen-lockfile
 pnpm dev
-\`\`\`
+```
 
-打开终端显示的地址，通常是 [http://127.0.0.1:5173/?demo](http://127.0.0.1:5173/?demo)。进入首页的“开放课程”，点击第一张 **LangChain 大模型应用开发** 课程卡片，也可访问 \`http://127.0.0.1:5173/?demo#langchain-course\`。旧的 \`#langchain-topic\` 地址仍可打开这门课程。
+打开终端显示的地址，通常是 [http://127.0.0.1:5173/?demo](http://127.0.0.1:5173/?demo)。进入首页的“开放课程”，点击第一张 **LangChain 大模型应用开发** 课程卡片，也可访问 `http://127.0.0.1:5173/?demo#langchain-course`。旧的 `#langchain-topic` 地址仍可打开这门课程。
 
-\`?demo\` 是开发环境中的前端演示模式，角色选择不等于真实登录。查看门户公开课程无需真实账号。
+`?demo` 是开发环境中的前端演示模式，角色选择不等于真实登录。查看门户公开课程无需真实账号。
 
 构建静态文件：
 
-\`\`\`powershell
+```powershell
 pnpm build
-\`\`\`
+```
 
-构建产物在 \`dist/\`。上传源码时不需要 \`node_modules/\` 与 \`dist/\`。
+构建产物在 `dist/`。上传源码时不需要 `node_modules/` 与 `dist/`。
 
 ## 视频资源如何接入
 
-项目内的 \`public/videos/langchain-overview-demo.mp4\` 是自制短视频，仅用于验证播放器。视频目录取自你提供的“尚硅谷大模型技术之 LangChain”网盘分享中的文件名；网盘链接不是可直接嵌入网页的 MP4 地址，也没有把分享中的原视频打包进仓库。
+项目内的 `public/videos/langchain-overview-demo.mp4` 是自制短视频，仅用于验证播放器。视频目录取自你提供的“尚硅谷大模型技术之 LangChain”网盘分享中的文件名；网盘链接不是可直接嵌入网页的 MP4 地址，也没有把分享中的原视频打包进仓库。
 
-如已将原视频下载到电脑，在视频页选择包含 \`day01\`、\`day02\`、\`day03\` 的上层文件夹。页面按 **日期文件夹 + 原文件名** 匹配 MP4，并在当前浏览器会话中播放；文件不会上传服务器。关闭页面后需重新选择。仅第一节在没有原视频时播放自制演示片。
+如已将原视频下载到电脑，在视频页选择包含 `day01`、`day02`、`day03` 的上层文件夹。页面按 **日期文件夹 + 原文件名** 匹配 MP4，并在当前浏览器会话中播放；文件不会上传服务器。关闭页面后需重新选择。仅第一节在没有原视频时播放自制演示片。
 
 公开部署前，应确认原视频的使用与分发授权，并将获准使用的视频放到受控存储或媒体服务，再把视频地址写入课程数据。不要把网盘分享地址当作直链。
 
@@ -47,20 +47,20 @@ pnpm build
 
 | 路径 | 作用 |
 | --- | --- |
-| \`src/components/PublicPortal.vue\` | 门户首页和开放课程卡片 |
-| \`src/components/LangChainOverview.vue\` | LangChain 课程详情与章节入口 |
-| \`src/components/LangChainTopic.vue\` | 站内视频学习页 |
-| \`src/components/LangChainMindMap.vue\` | 可展开、折叠的课程思维导图 |
-| \`src/components/LangChainAssessment.vue\` | 章节练习与考试演示 |
-| \`src/components/LangChainPersonalized.vue\` | 个性化补学路径示例 |
-| \`src/data/langchain-topic.js\` | 5 个单元与 48 个视频文件名 |
-| \`src/data/langchain-course.js\` | 思维导图与知识点示例数据 |
-| \`src/data/langchain-assessment.js\` | 自编演示题与参考资料链接 |
+| `src/components/PublicPortal.vue` | 门户首页和开放课程卡片 |
+| `src/components/LangChainOverview.vue` | LangChain 课程详情与章节入口 |
+| `src/components/LangChainTopic.vue` | 站内视频学习页 |
+| `src/components/LangChainMindMap.vue` | 可展开、折叠的课程思维导图 |
+| `src/components/LangChainAssessment.vue` | 章节练习与考试演示 |
+| `src/components/LangChainPersonalized.vue` | 个性化补学路径示例 |
+| `src/data/langchain-topic.js` | 5 个单元与 48 个视频文件名 |
+| `src/data/langchain-course.js` | 思维导图与知识点示例数据 |
+| `src/data/langchain-assessment.js` | 自编演示题与参考资料链接 |
 
 笔记与讨论内容仅保存在当前浏览器的本地存储中，其他用户看不到；清理浏览器数据可能丢失。正式考试、成绩、讨论、学习记录和推荐规则需由后端提供并验证权限。前端题目和答案不得作为正式考试的安全实现。
 
 ## 与完整平台的关系
 
-本目录是前端源码，不包含后端、数据库或 Ollama 模型。Vite 将 \`/api/\` 默认代理至 \`http://127.0.0.1:3002\`；如需连接另一后端，可设置 \`EDUTECH_API_TARGET\`。现有 \`package.json\` 保留部分后端脚本，但此目录没有完整 \`server/\`，不能在本目录独立运行后端迁移或测试。
+本目录是前端源码，不包含后端、数据库或 Ollama 模型。Vite 将 `/api/` 默认代理至 `http://127.0.0.1:3002`；如需连接另一后端，可设置 `EDUTECH_API_TARGET`。现有 `package.json` 保留部分后端脚本，但此目录没有完整 `server/`，不能在本目录独立运行后端迁移或测试。
 
-不要上传 \`.env\`、密钥、数据库备份、模型权重、未获授权的课程视频或 \`node_modules/\`。本项目尚未验证公网部署。
+不要上传 `.env`、密钥、数据库备份、模型权重、未获授权的课程视频或 `node_modules/`。本项目尚未验证公网部署。
